@@ -3,9 +3,10 @@ import type { DesignVariantWithItemCount } from "@/lib/design/get-design-variant
 
 interface Props {
   variants: DesignVariantWithItemCount[];
+  projectId: string;
 }
 
-export function DesignVariantGrid({ variants }: Props) {
+export function DesignVariantGrid({ variants, projectId }: Props) {
   if (variants.length === 0) {
     return (
       <div className="rounded-xl border bg-card p-12 text-center">
@@ -20,7 +21,11 @@ export function DesignVariantGrid({ variants }: Props) {
   return (
     <div className="grid gap-6 sm:grid-cols-2">
       {variants.map((variant) => (
-        <DesignVariantCard key={variant.id} variant={variant} />
+        <DesignVariantCard
+          key={variant.id}
+          variant={variant}
+          href={`/projects/${projectId}/variants/${variant.id}`}
+        />
       ))}
     </div>
   );

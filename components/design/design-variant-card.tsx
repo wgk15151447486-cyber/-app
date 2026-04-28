@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -23,12 +24,13 @@ const difficultyLabels: Record<string, string> = {
 
 interface Props {
   variant: DesignVariantWithItemCount;
+  href?: string;
 }
 
-export function DesignVariantCard({ variant }: Props) {
+export function DesignVariantCard({ variant, href }: Props) {
   const isRecommended = variant.variant_type === "ai_recommended";
 
-  return (
+  const card = (
     <Card
       className={`overflow-hidden transition-shadow hover:shadow-lg ${
         isRecommended ? "ring-2 ring-primary/50" : ""
@@ -114,4 +116,10 @@ export function DesignVariantCard({ variant }: Props) {
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return <Link href={href}>{card}</Link>;
+  }
+
+  return card;
 }

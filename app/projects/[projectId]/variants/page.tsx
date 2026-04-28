@@ -41,7 +41,7 @@ export default async function VariantsPage({ params }: Props) {
         </div>
       </div>
 
-      <DesignVariantGrid variants={variants} />
+      <DesignVariantGrid variants={variants} projectId={projectId} />
     </div>
   );
 }
