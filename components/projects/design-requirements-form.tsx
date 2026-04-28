@@ -14,6 +14,7 @@ import {
   PERMISSION_TOGGLES,
 } from "@/types/requirements";
 import type { DesignRequirements } from "@/types/requirements";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   projectId: string;
@@ -24,6 +25,7 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [preferredStyles, setPreferredStyles] = useState<string[]>(
     existing?.preferred_styles ?? []
@@ -69,6 +71,27 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
     child_friendly: [childFriendly, setChildFriendly],
     easy_to_clean: [easyToClean, setEasyToClean],
   };
+
+  async function handleGenerate() {
+    setIsGenerating(true);
+    try {
+      const res = await fetch("/api/generate/mock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "Generation failed. Please try again.");
+        return;
+      }
+      router.push(`/projects/${projectId}/generating`);
+    } catch {
+      alert("Generation failed. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   function handleSave() {
     setSaved(false);
@@ -200,9 +223,17 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
           type="button"
           variant="outline"
           className="w-full"
-          onClick={() => router.push(`/projects/${projectId}/generating`)}
+          onClick={handleGenerate}
+          disabled={isGenerating}
         >
-          Generate design variants &rarr;
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Generating…
+            </>
+          ) : (
+            "Generate design variants →"
+          )}
         </Button>
       </div>
     </div>

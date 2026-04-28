@@ -70,6 +70,14 @@ export default async function ProjectPage({ params }: Props) {
               Design requirements &rarr;
             </Link>
           )}
+          {project.status === "completed" && (
+            <Link
+              href={`/projects/${project.id}/variants`}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View design variants &rarr;
+            </Link>
+          )}
         </div>
       </div>
 
