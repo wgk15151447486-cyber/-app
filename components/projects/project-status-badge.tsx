@@ -5,6 +5,8 @@ const variants: Record<ProjectStatus, string> = {
   draft: "border-transparent bg-muted text-muted-foreground",
   images_uploaded:
     "border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  requirements_completed:
+    "border-transparent bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
   in_progress:
     "border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
   completed:
@@ -14,6 +16,7 @@ const variants: Record<ProjectStatus, string> = {
 const labels: Record<ProjectStatus, string> = {
   draft: "Draft",
   images_uploaded: "Images Uploaded",
+  requirements_completed: "Requirements Done",
   in_progress: "In Progress",
   completed: "Completed",
 };

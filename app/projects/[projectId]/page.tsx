@@ -2,8 +2,10 @@
 import Link from "next/link";
 import { getProject } from "@/lib/projects/get-project";
 import { getProjectImages } from "@/lib/projects/get-project-images";
+import { getRequirements } from "@/lib/requirements/get-requirements";
 import { ProjectStatusBadge } from "@/components/projects/project-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +40,7 @@ export default async function ProjectPage({ params }: Props) {
   const { projectId } = await params;
   const project = await getProject(projectId);
   const images = await getProjectImages(projectId);
+  const requirements = await getRequirements(projectId);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
@@ -52,12 +55,22 @@ export default async function ProjectPage({ params }: Props) {
             </span>
           </div>
         </div>
-        <Link
-          href={`/projects/${project.id}/upload`}
-          className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          Upload photos
-        </Link>
+        <div className="flex flex-col gap-2 text-right">
+          <Link
+            href={`/projects/${project.id}/upload`}
+            className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            {images.length > 0 ? "Manage photos" : "Upload photos"}
+          </Link>
+          {images.length > 0 && (
+            <Link
+              href={`/projects/${project.id}/requirements`}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              Design requirements &rarr;
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Uploaded images preview */}
@@ -82,6 +95,49 @@ export default async function ProjectPage({ params }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Requirements summary */}
+      {requirements && (
+        <div className="mb-6">
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+            Design Requirements
+          </h2>
+          <Card>
+            <CardContent className="space-y-3 py-4">
+              {requirements.preferred_styles.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Styles</p>
+                  <div className="flex flex-wrap gap-1">
+                    {requirements.preferred_styles.map((s) => (
+                      <Badge key={s} variant="secondary" className="text-xs">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {requirements.target_goals.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Goals</p>
+                  <div className="flex flex-wrap gap-1">
+                    {requirements.target_goals.map((g) => (
+                      <Badge key={g} variant="secondary" className="text-xs">
+                        {g}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {requirements.free_text && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Notes</p>
+                  <p className="text-sm">{requirements.free_text}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
 
