@@ -1,5 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { getProject } from "@/lib/projects/get-project";
+import { getProjectImages } from "@/lib/projects/get-project-images";
 import { ProjectStatusBadge } from "@/components/projects/project-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -35,6 +37,7 @@ const budgetTypeLabels: Record<string, string> = {
 export default async function ProjectPage({ params }: Props) {
   const { projectId } = await params;
   const project = await getProject(projectId);
+  const images = await getProjectImages(projectId);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
@@ -56,6 +59,31 @@ export default async function ProjectPage({ params }: Props) {
           Upload photos
         </Link>
       </div>
+
+      {/* Uploaded images preview */}
+      {images.length > 0 && (
+        <div className="mb-6">
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+            Photos ({images.length}/5)
+          </h2>
+          <div className="flex gap-2 overflow-x-auto">
+            {images.map((img) => (
+              <div
+                key={img.id}
+                className={`shrink-0 overflow-hidden rounded-lg border-2 ${
+                  img.is_primary ? "border-primary" : "border-transparent"
+                }`}
+              >
+                <img
+                  src={img.image_url}
+                  alt="Room"
+                  className="h-24 w-32 object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 sm:grid-cols-2">
         <Card>

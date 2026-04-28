@@ -24,6 +24,7 @@ export type BudgetType = (typeof BUDGET_TYPES)[number];
 
 export const PROJECT_STATUSES = [
   "draft",
+  "images_uploaded",
   "in_progress",
   "completed",
 ] as const;

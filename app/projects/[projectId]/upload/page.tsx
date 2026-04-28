@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { getProject } from "@/lib/projects/get-project";
+import { getProjectImages } from "@/lib/projects/get-project-images";
+import { requireUser } from "@/lib/auth/get-current-user";
+import { ImageUploader } from "@/components/projects/image-uploader";
+import { UploadedImageGrid } from "@/components/projects/uploaded-image-grid";
 
 export const dynamic = "force-dynamic";
 
@@ -9,23 +13,39 @@ interface Props {
 
 export default async function UploadPage({ params }: Props) {
   const { projectId } = await params;
+  const user = await requireUser();
   const project = await getProject(projectId);
+  const images = await getProjectImages(projectId);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:py-32">
-      <h1 className="text-3xl font-bold tracking-tight">Upload Photos</h1>
-      <p className="mt-2 text-muted-foreground">
-        Project: {project.title}
-      </p>
-      <p className="mt-8 rounded-xl border bg-card px-6 py-12 text-muted-foreground">
-        Image upload will be implemented in Task 5.
-      </p>
-      <Link
-        href={`/projects/${project.id}`}
-        className="mt-6 inline-flex items-center text-sm font-medium text-primary hover:underline"
-      >
-        &larr; Back to project
-      </Link>
+    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Upload Photos</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Project: {project.title} &middot; {images.length}/5 images
+          </p>
+        </div>
+        <Link
+          href={`/projects/${project.id}`}
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          &larr; Back to project
+        </Link>
+      </div>
+
+      <div className="space-y-8">
+        <ImageUploader
+          projectId={projectId}
+          userId={user.id}
+          existingCount={images.length}
+          onUploaded={() => {
+            // Revalidate is handled by the server action's revalidatePath
+          }}
+        />
+
+        <UploadedImageGrid images={images} projectId={projectId} />
+      </div>
     </div>
   );
 }
