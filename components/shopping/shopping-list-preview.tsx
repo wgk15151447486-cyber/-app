@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LockKeyhole } from "lucide-react";
@@ -18,9 +19,10 @@ const priorityVariants: Record<string, string> = {
 interface Props {
   items: ShoppingItem[];
   isPaid: boolean;
+  shoppingListHref: string;
 }
 
-export function ShoppingListPreview({ items, isPaid }: Props) {
+export function ShoppingListPreview({ items, isPaid, shoppingListHref }: Props) {
   if (items.length === 0) {
     return (
       <Card>
@@ -119,15 +121,12 @@ export function ShoppingListPreview({ items, isPaid }: Props) {
         </div>
 
         <div className="flex items-center gap-2 border-t pt-3">
-          <button
-            disabled
-            className="inline-flex h-9 items-center justify-center rounded-lg border px-4 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
+          <Link
+            href={shoppingListHref}
+            className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             View Full Shopping List
-          </button>
-          <span className="text-xs text-muted-foreground">
-            Coming in Task 10
-          </span>
+          </Link>
         </div>
       </CardContent>
     </Card>

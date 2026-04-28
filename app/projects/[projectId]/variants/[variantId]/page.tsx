@@ -42,7 +42,11 @@ export default async function VariantDetailPage({ params }: Props) {
 
       {/* Shopping list preview */}
       <div className="mt-8">
-        <ShoppingListPreview items={items} isPaid={project.is_paid} />
+        <ShoppingListPreview
+          items={items}
+          isPaid={project.is_paid}
+          shoppingListHref={`/projects/${projectId}/variants/${variantId}/shopping-list`}
+        />
       </div>
 
       {/* Action buttons */}
