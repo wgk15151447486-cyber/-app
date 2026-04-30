@@ -57,12 +57,12 @@ export default async function VariantDetailPage({ params }: Props) {
         >
           &larr; Back to all variants
         </Link>
-        <button
-          disabled
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground opacity-50 cursor-not-allowed"
+        <Link
+          href={`/projects/${projectId}/variants/${variantId}/edit`}
+          className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           Continue Editing
-        </button>
+        </Link>
       </div>
     </div>
   );
