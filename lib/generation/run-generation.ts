@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getProject } from "@/lib/projects/get-project";
 import { analyzeRoom } from "@/lib/ai/analyze-room";
 import { generateDesignVariants } from "@/lib/ai/generate-design-variants";
-import { getTextModel, getVisionModel } from "@/lib/ai/client";
+import { generateDesignImage } from "@/lib/ai/generate-design-image";
+import { getTextModel, getVisionModel, getImageModel } from "@/lib/ai/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface RunContext {
@@ -133,7 +134,110 @@ export async function runGeneration(ctx: RunContext) {
     }
   }
 
-  // --- Step 3: Mark complete ---
+  // --- Step 3: Image Generation ---
+  await supabase
+    .from("generation_jobs")
+    .update({ progress: 60 })
+    .eq("id", jobId);
+
+  const imageModel = getImageModel();
+  const imageResults: { variantId: string; success: boolean; error?: string }[] = [];
+
+  for (let i = 0; i < variantIds.length; i++) {
+    const variantId = variantIds[i];
+    const variant = aiResponse.variants[i];
+
+    // Update variant status to processing
+    await supabase
+      .from("design_variants")
+      .update({ generation_status: "processing" })
+      .eq("id", variantId)
+      .eq("user_id", userId);
+
+    try {
+      const result = await generateDesignImage({
+        variant,
+        variantId,
+        project: { room_type: project.room_type },
+        userId,
+        projectId,
+        requirements,
+      });
+
+      await supabase
+        .from("design_variants")
+        .update({
+          image_url: result.imageUrl,
+          image_storage_path: result.storagePath,
+          prompt_used: result.promptUsed,
+          ai_model: result.aiModel,
+          generation_status: "completed",
+        })
+        .eq("id", variantId)
+        .eq("user_id", userId);
+
+      imageResults.push({ variantId, success: true });
+    } catch (e) {
+      const errorMessage =
+        e instanceof Error ? e.message : "Unknown image generation error";
+
+      await supabase
+        .from("design_variants")
+        .update({
+          generation_status: "failed",
+          prompt_used: imageModel,
+        })
+        .eq("id", variantId)
+        .eq("user_id", userId);
+
+      imageResults.push({ variantId, success: false, error: errorMessage });
+    }
+
+    // Progress: 60 → 90 spread across variants
+    const progress = 60 + Math.round(((i + 1) / variantIds.length) * 30);
+    await supabase
+      .from("generation_jobs")
+      .update({ progress })
+      .eq("id", jobId);
+  }
+
+  const imageSuccesses = imageResults.filter((r) => r.success).length;
+  const imageFailures = imageResults.filter((r) => !r.success);
+
+  // --- Step 4: Mark complete ---
+  if (imageSuccesses === 0 && imageResults.length > 0) {
+    // All images failed — mark project and job as failed
+    const failureMessages = imageFailures.map((f) => f.error).join("; ");
+
+    await supabase
+      .from("projects")
+      .update({ status: "failed", updated_at: new Date().toISOString() })
+      .eq("id", projectId)
+      .eq("user_id", userId);
+
+    await supabase
+      .from("generation_jobs")
+      .update({
+        status: "failed",
+        progress: 100,
+        completed_at: new Date().toISOString(),
+        error_message: `All image generations failed: ${failureMessages}`,
+        output_payload: {
+          room_analysis_id: analysisRecord?.id,
+          variant_count: variantIds.length,
+          variant_ids: variantIds,
+          total_shopping_items: totalItems,
+          ai_model: aiModel,
+          vision_model: visionModel,
+          image_model: imageModel,
+          image_results: imageResults,
+        },
+      })
+      .eq("id", jobId);
+
+    return { variantIds, analysisId: analysisRecord?.id };
+  }
+
   await supabase
     .from("projects")
     .update({ status: "completed", updated_at: new Date().toISOString() })
@@ -146,6 +250,7 @@ export async function runGeneration(ctx: RunContext) {
       status: "completed",
       progress: 100,
       completed_at: new Date().toISOString(),
+      cost_estimate: null,
       output_payload: {
         room_analysis_id: analysisRecord?.id,
         variant_count: variantIds.length,
@@ -153,6 +258,10 @@ export async function runGeneration(ctx: RunContext) {
         total_shopping_items: totalItems,
         ai_model: aiModel,
         vision_model: visionModel,
+        image_model: imageModel,
+        image_results: imageResults,
+        image_successes: imageSuccesses,
+        image_failures: imageFailures.length,
       },
     })
     .eq("id", jobId);

@@ -7,6 +7,7 @@ const API_KEY = process.env.OPENAI_API_KEY ?? "";
 
 const TEXT_MODEL = process.env.AI_TEXT_MODEL || "gpt-4o";
 const VISION_MODEL = process.env.AI_VISION_MODEL || "gpt-4o";
+const IMAGE_MODEL = process.env.AI_IMAGE_MODEL || "dall-e-3";
 
 export function getTextModel() {
   return TEXT_MODEL;
@@ -14,6 +15,10 @@ export function getTextModel() {
 
 export function getVisionModel() {
   return VISION_MODEL;
+}
+
+export function getImageModel() {
+  return IMAGE_MODEL;
 }
 
 export async function aiChat(
@@ -76,4 +81,60 @@ export async function aiChatJson<T>(
       `Failed to parse AI JSON response: ${text.slice(0, 300)}`
     );
   }
+}
+
+export interface AiImageOptions {
+  model?: string;
+  quality?: string;
+  size?: string;
+}
+
+export async function aiImage(
+  prompt: string,
+  options: AiImageOptions = {}
+): Promise<string> {
+  const {
+    model = IMAGE_MODEL,
+    quality = process.env.IMAGE_GENERATION_QUALITY || "standard",
+    size = process.env.IMAGE_GENERATION_SIZE || "1024x1024",
+  } = options;
+
+  if (!API_KEY) {
+    throw new Error(
+      "Missing OPENAI_API_KEY environment variable. Set it in .env.local to generate images."
+    );
+  }
+
+  const body: Record<string, unknown> = {
+    model,
+    prompt,
+    n: 1,
+    quality,
+    size,
+    response_format: "url",
+  };
+
+  const res = await fetch(`${BASE_URL}/images/generations`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${API_KEY}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `Image generation API error ${res.status}: ${text.slice(0, 300)}`
+    );
+  }
+
+  const data = await res.json();
+  const url = data.data?.[0]?.url;
+  if (!url) {
+    throw new Error("Image generation API returned no image URL");
+  }
+
+  return url;
 }
