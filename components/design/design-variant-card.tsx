@@ -11,9 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import type { DesignVariantWithItemCount } from "@/lib/design/get-design-variants";
 
 const variantTypeLabels: Record<string, string> = {
-  ai_recommended: "AI Recommended",
-  alternative_a: "Alternative A",
-  alternative_b: "Alternative B",
+  low_budget_refresh: "Low-Budget Refresh",
+  photo_friendly_airbnb: "Photo-Friendly Airbnb",
+  cozy_premium: "Cozy Premium",
+  durable_easy_clean: "Durable & Easy-Clean",
 };
 
 const difficultyLabels: Record<string, string> = {
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export function DesignVariantCard({ variant, href }: Props) {
-  const isRecommended = variant.variant_type === "ai_recommended";
+  const isRecommended = variant.variant_type === "photo_friendly_airbnb";
 
   const card = (
     <Card

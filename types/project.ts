@@ -28,6 +28,7 @@ export const PROJECT_STATUSES = [
   "requirements_completed",
   "in_progress",
   "completed",
+  "failed",
 ] as const;
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];

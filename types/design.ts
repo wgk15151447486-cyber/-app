@@ -1,7 +1,8 @@
 export const VARIANT_TYPES = [
-  "ai_recommended",
-  "alternative_a",
-  "alternative_b",
+  "low_budget_refresh",
+  "photo_friendly_airbnb",
+  "cozy_premium",
+  "durable_easy_clean",
 ] as const;
 
 export type VariantType = (typeof VARIANT_TYPES)[number];

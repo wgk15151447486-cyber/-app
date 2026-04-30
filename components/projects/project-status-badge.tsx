@@ -11,6 +11,8 @@ const variants: Record<ProjectStatus, string> = {
     "border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
   completed:
     "border-transparent bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  failed:
+    "border-transparent bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
 };
 
 const labels: Record<ProjectStatus, string> = {
@@ -19,6 +21,7 @@ const labels: Record<ProjectStatus, string> = {
   requirements_completed: "Requirements Done",
   in_progress: "In Progress",
   completed: "Completed",
+  failed: "Failed",
 };
 
 interface Props {

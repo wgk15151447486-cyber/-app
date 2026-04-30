@@ -75,7 +75,7 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
   async function handleGenerate() {
     setIsGenerating(true);
     try {
-      const res = await fetch("/api/generate/mock", {
+      const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId }),

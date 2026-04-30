@@ -107,7 +107,7 @@ export async function mockGenerateDesigns(ctx: MockContext) {
 
   const variants = [
     {
-      variant_type: "ai_recommended" as const,
+      variant_type: "photo_friendly_airbnb" as const,
       title: "Photo-Friendly Airbnb Style",
       subtitle: "Designed to wow in listing photos",
       design_summary:
@@ -220,7 +220,7 @@ export async function mockGenerateDesigns(ctx: MockContext) {
       ],
     },
     {
-      variant_type: "alternative_a" as const,
+      variant_type: "low_budget_refresh" as const,
       title: "Low-Budget Refresh",
       subtitle: "Affordable updates with maximum impact",
       design_summary:
@@ -334,7 +334,7 @@ export async function mockGenerateDesigns(ctx: MockContext) {
       ],
     },
     {
-      variant_type: "alternative_b" as const,
+      variant_type: "cozy_premium" as const,
       title: "Cozy Premium Stay",
       subtitle: "Warm, inviting luxury for discerning guests",
       design_summary:
@@ -450,7 +450,7 @@ export async function mockGenerateDesigns(ctx: MockContext) {
       ],
     },
     {
-      variant_type: "alternative_a" as const,
+      variant_type: "durable_easy_clean" as const,
       title: "Durable & Easy-Clean Setup",
       subtitle: "Built for high-turnover rental operation",
       design_summary:
