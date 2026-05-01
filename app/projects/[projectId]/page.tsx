@@ -4,6 +4,7 @@ import { getProject } from "@/lib/projects/get-project";
 import { getProjectImages } from "@/lib/projects/get-project-images";
 import { getRequirements } from "@/lib/requirements/get-requirements";
 import { ProjectStatusBadge } from "@/components/projects/project-status-badge";
+import { UnlockProjectCard } from "@/components/payments/unlock-project-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -80,6 +81,13 @@ export default async function ProjectPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* Unlock CTA */}
+      {project.status === "completed" && !project.is_paid && (
+        <div className="mb-6">
+          <UnlockProjectCard projectId={project.id} />
+        </div>
+      )}
 
       {/* Uploaded images preview */}
       {images.length > 0 && (

@@ -8,9 +8,10 @@ interface Props {
   grouped: GroupedShoppingItems;
   totals: BudgetTotals;
   isPaid: boolean;
+  projectId: string;
 }
 
-export function ShoppingList({ grouped, totals, isPaid }: Props) {
+export function ShoppingList({ grouped, totals, isPaid, projectId }: Props) {
   const categories = Object.keys(grouped);
 
   if (categories.length === 0) {
@@ -23,7 +24,7 @@ export function ShoppingList({ grouped, totals, isPaid }: Props) {
 
   return (
     <div className="space-y-8">
-      {!isPaid && <LockedShoppingOverlay />}
+      {!isPaid && <LockedShoppingOverlay projectId={projectId} />}
 
       {categories.map((category) => (
         <ShoppingCategorySection

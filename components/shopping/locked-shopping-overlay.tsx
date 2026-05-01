@@ -1,7 +1,12 @@
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { LockKeyhole } from "lucide-react";
 
-export function LockedShoppingOverlay() {
+interface Props {
+  projectId: string;
+}
+
+export function LockedShoppingOverlay({ projectId }: Props) {
   return (
     <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950">
       <CardContent className="flex flex-col items-center gap-3 py-6 text-center sm:flex-row sm:text-left">
@@ -15,12 +20,12 @@ export function LockedShoppingOverlay() {
             purchase reasons, and more.
           </p>
         </div>
-        <a
-          href="/pricing"
+        <Link
+          href={`/projects/${projectId}/checkout`}
           className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-yellow-600 px-4 text-sm font-medium text-white transition-colors hover:bg-yellow-700 dark:bg-yellow-500 dark:text-black dark:hover:bg-yellow-400"
         >
-          View Plans
-        </a>
+          Unlock for $4.99
+        </Link>
       </CardContent>
     </Card>
   );

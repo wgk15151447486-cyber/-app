@@ -79,6 +79,7 @@ export default async function ShoppingListPage({ params }: Props) {
         grouped={grouped}
         totals={totals}
         isPaid={project.is_paid}
+        projectId={projectId}
       />
 
       {/* Back link */}
