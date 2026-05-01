@@ -5,6 +5,11 @@ import type {
 import { SHOPPING_CATEGORIES } from "@/types/shopping";
 import { VARIANT_TYPES } from "@/types/design";
 
+export interface AiEditResponse {
+  updated_design_summary: string;
+  image_edit_instruction: string;
+}
+
 export function validateRoomAnalysis(
   data: unknown
 ): AiRoomAnalysisOutput {
@@ -123,4 +128,20 @@ export function validateDesignVariants(
   }
 
   return d as unknown as AiDesignVariantsOutput;
+}
+
+export function validateEditResponse(
+  data: unknown
+): AiEditResponse {
+  const d = data as Record<string, unknown>;
+
+  if (typeof d.updated_design_summary !== "string" || !d.updated_design_summary.trim()) {
+    throw new Error("Missing or invalid updated_design_summary in edit response");
+  }
+
+  if (typeof d.image_edit_instruction !== "string" || !d.image_edit_instruction.trim()) {
+    throw new Error("Missing or invalid image_edit_instruction in edit response");
+  }
+
+  return d as unknown as AiEditResponse;
 }

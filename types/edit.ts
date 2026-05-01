@@ -16,6 +16,8 @@ export interface EditRequest {
   before_image_url: string | null;
   after_image_url: string | null;
   after_image_storage_path: string | null;
+  updated_design_summary: string | null;
+  image_edit_instruction: string | null;
   prompt_used: string | null;
   ai_model: string | null;
   status: EditRequestStatus;
@@ -31,6 +33,8 @@ export interface EditRequestInsert {
   before_image_url?: string | null;
   after_image_url?: string | null;
   after_image_storage_path?: string | null;
+  updated_design_summary?: string | null;
+  image_edit_instruction?: string | null;
   prompt_used?: string | null;
   ai_model?: string | null;
   status?: EditRequestStatus;

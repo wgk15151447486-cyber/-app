@@ -15,6 +15,7 @@ export function EditRequestForm({
   const [instruction, setInstruction] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [imageEditInstruction, setImageEditInstruction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit =
@@ -26,9 +27,10 @@ export function EditRequestForm({
     setIsSubmitting(true);
     setError(null);
     setResult(null);
+    setImageEditInstruction(null);
 
     try {
-      const res = await fetch("/api/edit/mock", {
+      const res = await fetch("/api/edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ variantId, instruction: instruction.trim() }),
@@ -42,6 +44,7 @@ export function EditRequestForm({
       }
 
       setResult(data.updatedSummary ?? null);
+      setImageEditInstruction(data.imageEditInstruction ?? null);
       setInstruction("");
     } catch {
       setError("Edit request failed. Please try again.");
@@ -105,13 +108,25 @@ export function EditRequestForm({
 
       {/* Result: updated summary */}
       {result && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
-          <p className="mb-2 text-sm font-medium text-green-800 dark:text-green-200">
-            Updated Design Summary
-          </p>
-          <p className="text-sm leading-relaxed text-green-700 dark:text-green-300">
-            {result}
-          </p>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
+            <p className="mb-2 text-sm font-medium text-green-800 dark:text-green-200">
+              Updated Design Summary
+            </p>
+            <p className="text-sm leading-relaxed text-green-700 dark:text-green-300">
+              {result}
+            </p>
+          </div>
+          {imageEditInstruction && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+              <p className="mb-2 text-sm font-medium text-blue-800 dark:text-blue-200">
+                Image Edit Instruction
+              </p>
+              <p className="text-sm leading-relaxed text-blue-700 dark:text-blue-300">
+                {imageEditInstruction}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

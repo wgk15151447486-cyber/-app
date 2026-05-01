@@ -2,7 +2,11 @@ import Link from "next/link";
 import { getProject } from "@/lib/projects/get-project";
 import { getDesignVariant } from "@/lib/design/get-design-variant";
 import { getShoppingList } from "@/lib/shopping/get-shopping-list";
+import { getRequirements } from "@/lib/requirements/get-requirements";
+import { matchShoppingItems } from "@/lib/shopping/match-shopping-items";
+import { groupShoppingItems } from "@/lib/shopping/group-shopping-items";
 import { ShoppingList } from "@/components/shopping/shopping-list";
+import type { BudgetTotals } from "@/lib/shopping/get-shopping-list";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +17,33 @@ interface Props {
 export default async function ShoppingListPage({ params }: Props) {
   const { projectId, variantId } = await params;
 
-  const [project, variant, shopData] = await Promise.all([
+  const [project, variant, shopData, requirements] = await Promise.all([
     getProject(projectId),
     getDesignVariant(variantId),
     getShoppingList(variantId),
+    getRequirements(projectId).catch(() => null),
   ]);
+
+  // Enrich items with product catalog matches
+  const matchedItems = await matchShoppingItems(
+    shopData.items,
+    project,
+    requirements
+  );
+
+  const grouped = groupShoppingItems(matchedItems);
+
+  const totals: BudgetTotals = {
+    itemCount: matchedItems.length,
+    priceMinTotal: matchedItems.reduce(
+      (sum, item) => sum + (item.price_min ?? 0),
+      0
+    ),
+    priceMaxTotal: matchedItems.reduce(
+      (sum, item) => sum + (item.price_max ?? 0),
+      0
+    ),
+  };
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
@@ -50,8 +76,8 @@ export default async function ShoppingListPage({ params }: Props) {
 
       {/* Shopping list content */}
       <ShoppingList
-        grouped={shopData.grouped}
-        totals={shopData.totals}
+        grouped={grouped}
+        totals={totals}
         isPaid={project.is_paid}
       />
 
