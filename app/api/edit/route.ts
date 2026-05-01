@@ -4,9 +4,13 @@ import { getDesignVariant } from "@/lib/design/get-design-variant";
 import { getProject } from "@/lib/projects/get-project";
 import { getEditCount } from "@/lib/edit/get-edit-requests";
 import { editDesignVariant } from "@/lib/ai/edit-design-variant";
+import { createRateLimiter } from "@/lib/security/rate-limit";
+import { createLogger } from "@/lib/logging/logger";
 
 const MAX_FREE_EDITS = 1;
 const MAX_PAID_EDITS = 5;
+const logger = createLogger("api:edit");
+const rateLimit = createRateLimiter(60 * 60 * 1000, 20); // 20 per hour
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -16,6 +20,14 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rl = rateLimit(user.id);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please try again later." },
+      { status: 429 }
+    );
   }
 
   let body: { variantId?: string; instruction?: string };
@@ -117,6 +129,13 @@ export async function POST(request: Request) {
   } catch (e) {
     const errorMessage =
       e instanceof Error ? e.message : "Unknown error";
+
+    logger.error("AI edit failed", {
+      userId: user.id,
+      variantId,
+      editRequestId: editRequest.id,
+      error: errorMessage,
+    });
 
     // Mark edit_request as failed — variant is untouched
     await supabase

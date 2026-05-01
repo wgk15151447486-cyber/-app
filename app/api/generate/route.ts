@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getProject } from "@/lib/projects/get-project";
 import { runGeneration } from "@/lib/generation/run-generation";
+import { createRateLimiter } from "@/lib/security/rate-limit";
+import { createLogger } from "@/lib/logging/logger";
+
+const logger = createLogger("api:generate");
+const rateLimit = createRateLimiter(60 * 60 * 1000, 10); // 10 per hour
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -11,6 +16,14 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rl = rateLimit(user.id);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded. Please try again later." },
+      { status: 429 }
+    );
   }
 
   let body: { projectId?: string };
@@ -76,6 +89,13 @@ export async function POST(request: Request) {
   } catch (e) {
     const errorMessage =
       e instanceof Error ? e.message : "Unknown error";
+
+    logger.error("AI generation failed", {
+      userId: user.id,
+      projectId,
+      jobId: job.id,
+      error: errorMessage,
+    });
 
     // Mark job as failed
     await supabase
