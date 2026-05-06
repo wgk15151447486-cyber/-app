@@ -40,9 +40,6 @@ export default async function UploadPage({ params }: Props) {
           projectId={projectId}
           userId={user.id}
           existingCount={images.length}
-          onUploaded={() => {
-            // Revalidate is handled by the server action's revalidatePath
-          }}
         />
 
         <UploadedImageGrid images={images} projectId={projectId} />

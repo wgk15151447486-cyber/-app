@@ -2,21 +2,21 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProjectImage } from "@/lib/storage/upload-project-image";
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE, MAX_IMAGES_PER_PROJECT } from "@/types/image";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Loader2 } from "lucide-react";
-import type { ProjectImage } from "@/types/image";
 
 interface Props {
   projectId: string;
   userId: string;
   existingCount: number;
-  onUploaded: (image: ProjectImage) => void;
 }
 
-export function ImageUploader({ projectId, userId, existingCount, onUploaded }: Props) {
+export function ImageUploader({ projectId, userId, existingCount }: Props) {
+  const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -102,7 +102,7 @@ export function ImageUploader({ projectId, userId, existingCount, onUploaded }: 
           mimeType: file.type,
           fileSize: file.size,
         });
-        onUploaded(record);
+        void record; // uploadProjectImage handles validation + DB insert
       } catch (e) {
         setError(
           e instanceof Error ? e.message : "Failed to save image record."
@@ -118,6 +118,7 @@ export function ImageUploader({ projectId, userId, existingCount, onUploaded }: 
       return [];
     });
     setUploading(false);
+    router.refresh();
   }
 
   const canSelect = remaining > 0 && files.length < remaining;
