@@ -32,6 +32,12 @@ export async function aiChat(
     jsonMode = false,
   } = options;
 
+  if (!API_KEY) {
+    throw new Error(
+      "AI environment variables are not configured. Please set OPENAI_API_KEY in .env.local before using AI generation."
+    );
+  }
+
   const body: Record<string, unknown> = {
     model,
     messages,

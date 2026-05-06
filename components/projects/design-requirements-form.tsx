@@ -86,8 +86,10 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
         return;
       }
       router.push(`/projects/${projectId}/generating`);
-    } catch {
-      alert("Generation failed. Please try again.");
+    } catch (e) {
+      const message =
+        e instanceof Error ? e.message : "Generation failed. Please try again.";
+      alert(message);
     } finally {
       setIsGenerating(false);
     }
