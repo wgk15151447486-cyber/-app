@@ -19,23 +19,19 @@ export function CheckoutButton({ projectId }: { projectId: string }) {
         body: JSON.stringify({ projectId }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setError(data.error ?? "Something went wrong");
-        return;
-      }
-
-      if (data.url) {
+      } else if (data.url) {
         router.push(data.url);
       } else {
         setError("No checkout URL returned");
       }
     } catch {
       setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   return (
