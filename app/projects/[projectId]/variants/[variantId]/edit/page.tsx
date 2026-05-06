@@ -24,7 +24,8 @@ export default async function EditPage({ params }: Props) {
   ]);
 
   const maxEdits = project.is_paid ? MAX_PAID_EDITS : MAX_FREE_EDITS;
-  const remainingEdits = Math.max(0, maxEdits - editRequests.length);
+  const usedEdits = editRequests.filter((r) => r.status !== "failed").length;
+  const remainingEdits = Math.max(0, maxEdits - usedEdits);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">

@@ -34,11 +34,13 @@ export async function getEditCount(variantId: string): Promise<number> {
 
   const supabase = await createClient();
 
+  // Only count completed and processing edits; failed edits don't consume quota
   const { count, error } = await supabase
     .from("edit_requests")
     .select("*", { count: "exact", head: true })
     .eq("design_variant_id", variantId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .neq("status", "failed");
 
   if (error) {
     throw new Error(error.message);
