@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { EditSuggestionButtons } from "@/components/edit/edit-suggestion-buttons";
 
 interface Props {
@@ -12,8 +13,10 @@ export function EditRequestForm({
   variantId,
   remainingEdits,
 }: Props) {
+  const router = useRouter();
   const [instruction, setInstruction] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMockEditing, setIsMockEditing] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [imageEditInstruction, setImageEditInstruction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +53,38 @@ export function EditRequestForm({
       setError("Edit request failed. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleMockEdit() {
+    if (!instruction.trim() || remainingEdits === 0) return;
+
+    setIsMockEditing(true);
+    setError(null);
+    setResult(null);
+    setImageEditInstruction(null);
+
+    try {
+      const res = await fetch("/api/edit/mock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variantId, instruction: instruction.trim() }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(data.error ?? "Mock edit failed. Please try again.");
+        return;
+      }
+
+      setResult(data.updatedSummary ?? null);
+      setInstruction("");
+      router.refresh();
+    } catch {
+      setError("Mock edit failed. Please try again.");
+    } finally {
+      setIsMockEditing(false);
     }
   }
 
@@ -97,6 +132,20 @@ export function EditRequestForm({
             {isSubmitting ? "Submitting…" : "Submit Edit Request"}
           </button>
         </div>
+
+        {/* Mock edit button (dev only) */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleMockEdit}
+              disabled={!canSubmit || isMockEditing}
+              className="inline-flex h-9 items-center justify-center rounded-lg border px-4 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
+            >
+              {isMockEditing ? "Submitting…" : "Use Mock Edit"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Error */}
