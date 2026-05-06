@@ -26,6 +26,7 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isMockGenerating, setIsMockGenerating] = useState(false);
 
   const [preferredStyles, setPreferredStyles] = useState<string[]>(
     existing?.preferred_styles ?? []
@@ -92,6 +93,29 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
       alert(message);
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleMockGenerate() {
+    setIsMockGenerating(true);
+    try {
+      const res = await fetch("/api/generate/mock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "Mock generation failed.");
+        return;
+      }
+      router.push(`/projects/${projectId}/variants`);
+    } catch (e) {
+      const message =
+        e instanceof Error ? e.message : "Mock generation failed.";
+      alert(message);
+    } finally {
+      setIsMockGenerating(false);
     }
   }
 
@@ -237,6 +261,25 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
             "Generate design variants →"
           )}
         </Button>
+
+        {process.env.NODE_ENV === "development" && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={handleMockGenerate}
+            disabled={isMockGenerating}
+          >
+            {isMockGenerating ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                Generating mock data…
+              </>
+            ) : (
+              "Use Mock Generation"
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );
