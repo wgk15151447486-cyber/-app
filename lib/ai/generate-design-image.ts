@@ -30,6 +30,19 @@ export async function generateDesignImage(
   const prompt = buildImagePrompt({ variant, project, requirements });
   const imageModel = getImageModel();
 
+  // Mock/placeholder image — no real API call
+  if (imageModel === "mock") {
+    const placeholderUrl =
+      "https://placehold.co/1024x1024/1a1a2e/e0e0e0?text=" +
+      encodeURIComponent(variant.title);
+    return {
+      imageUrl: placeholderUrl,
+      storagePath: "",
+      promptUsed: "mock (placeholder)",
+      aiModel: "mock",
+    };
+  }
+
   // Generate image via DALL-E
   const tempUrl = await aiImage(prompt, { model: imageModel });
 

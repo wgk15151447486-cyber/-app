@@ -9,7 +9,7 @@ AI-powered room setup for short-term rentals. Upload photos, get furnishing plan
 - **Styling:** Tailwind CSS v4 + shadcn/ui
 - **Auth & DB:** Supabase (auth, database, storage, RLS)
 - **Payments:** Stripe Checkout Sessions
-- **AI:** OpenAI-compatible API (GPT-4o for text/vision, DALL-E 3 for images)
+- **AI:** OpenAI-compatible API — supports OpenAI (GPT-4o, DALL-E 3) and DeepSeek (deepseek-v4-flash)
 - **PDF:** jsPDF (server-side generation)
 
 ## Getting Started
@@ -41,16 +41,31 @@ Copy `.env.example` to `.env.local` and fill in all values before running.
 
 ### AI Provider (required for generation)
 
+Set `AI_PROVIDER` to `openai` or `deepseek`, then configure the corresponding section.
+
+**OpenAI** (`AI_PROVIDER=openai`):
+
 | Variable | Description |
 |----------|-------------|
-| `AI_PROVIDER` | AI provider name (e.g. `openai`) |
 | `OPENAI_API_KEY` | OpenAI API key (`sk-...`) |
-| `AI_TEXT_MODEL` | Text/vision model (e.g. `gpt-4o`) |
-| `AI_VISION_MODEL` | Vision model (e.g. `gpt-4o`) |
-| `AI_IMAGE_MODEL` | Image model (e.g. `dall-e-3`) |
+| `AI_TEXT_MODEL` | Text model (default: `gpt-4o`) |
+| `AI_VISION_MODEL` | Vision model (default: `gpt-4o`) |
+| `AI_IMAGE_MODEL` | Image model (default: `dall-e-3`) |
+| `AI_BASE_URL` | API base URL (default: `https://api.openai.com/v1`) |
 | `IMAGE_GENERATION_QUALITY` | Image quality (`standard` or `hd`) |
 | `IMAGE_GENERATION_SIZE` | Image size (e.g. `1024x1024`) |
-| `AI_BASE_URL` | API base URL (e.g. `https://api.openai.com/v1`) |
+
+**DeepSeek** (`AI_PROVIDER=deepseek`):
+
+| Variable | Description |
+|----------|-------------|
+| `DEEPSEEK_API_KEY` | DeepSeek API key (`sk-...`) |
+| `AI_TEXT_MODEL` | Text model (default: `deepseek-v4-flash`) |
+| `AI_VISION_MODEL` | Vision model (default: `deepseek-v4-flash`) |
+| `AI_IMAGE_MODEL` | Image model (use `mock` for placeholder images) |
+| `AI_BASE_URL` | API base URL (default: `https://api.deepseek.com`) |
+
+> DeepSeek does not support real image generation — set `AI_IMAGE_MODEL=mock` to use placeholder images. Room analysis also runs in text-only mode with image URLs as context. |
 
 ### Stripe (required for payments)
 

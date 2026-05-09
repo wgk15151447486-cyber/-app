@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { aiChatJson, getVisionModel } from "@/lib/ai/client";
+import { aiChatJson, getVisionModel, getProviderName } from "@/lib/ai/client";
 import { validateRoomAnalysis } from "@/lib/ai/schemas";
 import { ROOM_ANALYSIS_PROMPT } from "@/lib/ai/prompts/room-analysis";
 import type { Project } from "@/types/project";
@@ -30,7 +30,7 @@ export async function analyzeRoom(
   if (requirements?.easy_to_clean) permissions.push("Easy to clean required");
 
   // Build the prompt
-  const prompt = ROOM_ANALYSIS_PROMPT
+  let prompt = ROOM_ANALYSIS_PROMPT
     .replace("{{room_type}}", project.room_type)
     .replace("{{purpose}}", project.purpose)
     .replace("{{location}}", [project.location_city, project.location_country].filter(Boolean).join(", ") || "Unknown")
@@ -46,16 +46,24 @@ export async function analyzeRoom(
     .replace("{{free_text}}", requirements?.free_text || "None")
     .replace("{{permissions}}", permissions.length > 0 ? permissions.join("; ") : "No special permissions");
 
-  // Build messages with images if available
+  const provider = getProviderName();
+
+  // Build messages — use vision image inputs only for OpenAI
   const userContent: Array<Record<string, unknown>> = [];
 
-  if (images && images.length > 0) {
+  if (provider === "openai" && images && images.length > 0) {
     for (const img of images) {
       userContent.push({
         type: "image_url",
         image_url: { url: img.image_url, detail: "high" },
       });
     }
+  }
+
+  // For non-vision providers, include image URLs as text context
+  if (provider !== "openai" && images && images.length > 0) {
+    const imageUrls = images.map((img) => img.image_url).join("\n  ");
+    prompt += `\n\nRoom photo URLs (for context — these are images of the room):\n  ${imageUrls}\n\nPlease analyze the room based on the provided project context, requirements, and the fact that the user has uploaded these room photos.`;
   }
 
   userContent.push({ type: "text", text: prompt });

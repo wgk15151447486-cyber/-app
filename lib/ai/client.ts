@@ -1,13 +1,39 @@
 import type { ChatMessage, AiCallOptions } from "@/types/ai";
 
-const BASE_URL =
-  process.env.AI_BASE_URL || "https://api.openai.com/v1";
+type AiProvider = "openai" | "deepseek";
 
-const API_KEY = process.env.OPENAI_API_KEY ?? "";
+function getProvider(): AiProvider {
+  return (process.env.AI_PROVIDER || "openai") as AiProvider;
+}
 
-const TEXT_MODEL = process.env.AI_TEXT_MODEL || "gpt-4o";
-const VISION_MODEL = process.env.AI_VISION_MODEL || "gpt-4o";
-const IMAGE_MODEL = process.env.AI_IMAGE_MODEL || "dall-e-3";
+function getApiKey(): string {
+  const provider = getProvider();
+  if (provider === "deepseek") {
+    return process.env.DEEPSEEK_API_KEY ?? "";
+  }
+  return process.env.OPENAI_API_KEY ?? "";
+}
+
+function getBaseUrl(): string {
+  if (process.env.AI_BASE_URL) return process.env.AI_BASE_URL;
+  if (getProvider() === "deepseek") return "https://api.deepseek.com";
+  return "https://api.openai.com/v1";
+}
+
+function getApiKeyErrorMessage(): string {
+  if (getProvider() === "deepseek") {
+    return "DeepSeek API key is not configured. Please set DEEPSEEK_API_KEY in .env.local.";
+  }
+  return "AI environment variables are not configured. Please set OPENAI_API_KEY in .env.local before using AI generation.";
+}
+
+const TEXT_MODEL = process.env.AI_TEXT_MODEL || (process.env.AI_PROVIDER === "deepseek" ? "deepseek-v4-flash" : "gpt-4o");
+const VISION_MODEL = process.env.AI_VISION_MODEL || (process.env.AI_PROVIDER === "deepseek" ? "deepseek-v4-flash" : "gpt-4o");
+const IMAGE_MODEL = process.env.AI_IMAGE_MODEL || (process.env.AI_PROVIDER === "deepseek" ? "mock" : "dall-e-3");
+
+export function getProviderName(): AiProvider {
+  return getProvider();
+}
 
 export function getTextModel() {
   return TEXT_MODEL;
@@ -32,10 +58,9 @@ export async function aiChat(
     jsonMode = false,
   } = options;
 
-  if (!API_KEY) {
-    throw new Error(
-      "AI environment variables are not configured. Please set OPENAI_API_KEY in .env.local before using AI generation."
-    );
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error(getApiKeyErrorMessage());
   }
 
   const body: Record<string, unknown> = {
@@ -49,11 +74,11 @@ export async function aiChat(
     body.response_format = { type: "json_object" };
   }
 
-  const res = await fetch(`${BASE_URL}/chat/completions`, {
+  const res = await fetch(`${getBaseUrl()}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(body),
   });
@@ -105,10 +130,13 @@ export async function aiImage(
     size = process.env.IMAGE_GENERATION_SIZE || "1024x1024",
   } = options;
 
-  if (!API_KEY) {
-    throw new Error(
-      "Missing OPENAI_API_KEY environment variable. Set it in .env.local to generate images."
-    );
+  if (model === "mock") {
+    throw new Error("Mock image model — use placeholder instead of calling aiImage()");
+  }
+
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error(getApiKeyErrorMessage());
   }
 
   const body: Record<string, unknown> = {
@@ -120,11 +148,11 @@ export async function aiImage(
     response_format: "url",
   };
 
-  const res = await fetch(`${BASE_URL}/images/generations`, {
+  const res = await fetch(`${getBaseUrl()}/images/generations`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(body),
   });
