@@ -433,7 +433,7 @@ export async function mockGenerateDesigns(ctx: MockContext) {
           priority: "optional" as const,
         },
         {
-          category: "small_furniture" as const,
+          category: "furniture" as const,
           name: "Upholstered Storage Ottoman",
           description:
             "Button-tufted ottoman with hinged lid and interior storage compartment for extra linens.",
@@ -533,7 +533,7 @@ export async function mockGenerateDesigns(ctx: MockContext) {
           priority: "essential" as const,
         },
         {
-          category: "small_furniture" as const,
+          category: "furniture" as const,
           name: "Solid Wood Nightstand with Drawer",
           description:
             "Rubberwood nightstand with sealed finish, one drawer, and open shelf — withstands scratches and cleans easily.",

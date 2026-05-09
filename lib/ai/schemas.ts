@@ -2,8 +2,98 @@ import type {
   AiRoomAnalysisOutput,
   AiDesignVariantsOutput,
 } from "@/types/ai";
-import { SHOPPING_CATEGORIES } from "@/types/shopping";
+import { SHOPPING_CATEGORIES, type ShoppingCategory } from "@/types/shopping";
 import { VARIANT_TYPES } from "@/types/design";
+
+const CATEGORY_ALIASES: Record<string, ShoppingCategory> = {
+  // Singular → plural forms
+  rug: "rugs",
+  carpet: "rugs",
+  mat: "rugs",
+  curtain: "curtains",
+  drape: "curtains",
+  drapes: "curtains",
+  blinds: "curtains",
+  window_treatment: "curtains",
+  // Art variations
+  art: "wall_art",
+  artwork: "wall_art",
+  painting: "wall_art",
+  poster: "wall_art",
+  print: "wall_art",
+  // Furniture variations
+  small_furniture: "furniture",
+  furnishing: "furniture",
+  sofa: "furniture",
+  couch: "furniture",
+  chair: "furniture",
+  table: "furniture",
+  desk: "furniture",
+  bed: "furniture",
+  nightstand: "furniture",
+  dresser: "furniture",
+  ottoman: "furniture",
+  bench: "furniture",
+  bookshelf: "furniture",
+  headboard: "furniture",
+  // Lighting variations
+  lamp: "lighting",
+  light: "lighting",
+  ceiling_light: "lighting",
+  floor_lamp: "lighting",
+  // Plant variations
+  plant: "plants",
+  greenery: "plants",
+  greens: "plants",
+  tree: "plants",
+  // Storage variations
+  shelf: "storage",
+  cabinet: "storage",
+  organizer: "storage",
+  bin: "storage",
+  basket: "storage",
+  rack: "storage",
+  // Bedding variations
+  pillow: "bedding",
+  blanket: "bedding",
+  sheets: "bedding",
+  duvet: "bedding",
+  comforter: "bedding",
+  throw: "bedding",
+  mattress: "bedding",
+  // Decor variations
+  accessory: "decor",
+  accessories: "decor",
+  candle: "decor",
+  vase: "decor",
+  mirror: "decor",
+  clock: "decor",
+  tray: "decor",
+  basket_decor: "decor",
+  // Other / misc
+  misc: "other",
+  miscellaneous: "other",
+};
+
+export function normalizeShoppingCategory(input: string): ShoppingCategory {
+  const normalized = input.trim().toLowerCase();
+  // Direct match
+  if (SHOPPING_CATEGORIES.includes(normalized as ShoppingCategory)) {
+    return normalized as ShoppingCategory;
+  }
+  // Alias lookup
+  if (CATEGORY_ALIASES[normalized]) {
+    return CATEGORY_ALIASES[normalized];
+  }
+  // Substring match (e.g. "wall_art_decor" → "wall_art")
+  for (const cat of SHOPPING_CATEGORIES) {
+    if (normalized.includes(cat)) {
+      return cat;
+    }
+  }
+  // Fallback
+  return "decor";
+}
 
 export interface AiEditResponse {
   updated_design_summary: string;
@@ -106,7 +196,11 @@ export function validateDesignVariants(
     }
 
     for (const item of v.shopping_items) {
-      if (typeof item.category !== "string" || !validCategories.has(item.category)) {
+      if (typeof item.category !== "string") {
+        throw new Error("Missing shopping item category");
+      }
+      item.category = normalizeShoppingCategory(item.category);
+      if (!validCategories.has(item.category)) {
         throw new Error(`Invalid shopping item category: ${item.category}`);
       }
       if (typeof item.name !== "string" || !item.name.trim()) {

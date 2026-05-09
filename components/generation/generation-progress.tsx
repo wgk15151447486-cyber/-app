@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,9 @@ export function GenerationProgress({ projectId, job: initialJob }: Props) {
   const router = useRouter();
   const [job] = useState<GenerationJob | null>(initialJob);
   const [countdown, setCountdown] = useState(3);
+  const hasRedirectedRef = useRef(false);
 
-  // Auto-redirect when job is completed
+  // Countdown timer — only manages the counter, never touches router
   useEffect(() => {
     if (!job || job.status !== "completed") return;
 
@@ -24,7 +25,6 @@ export function GenerationProgress({ projectId, job: initialJob }: Props) {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          router.push(`/projects/${projectId}/variants`);
           return 0;
         }
         return prev - 1;
@@ -32,7 +32,17 @@ export function GenerationProgress({ projectId, job: initialJob }: Props) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [job, projectId, router]);
+  }, [job]);
+
+  // Redirect when countdown reaches 0 — separate effect, no setState nesting
+  useEffect(() => {
+    if (!job || job.status !== "completed") return;
+    if (countdown !== 0) return;
+    if (hasRedirectedRef.current) return;
+
+    hasRedirectedRef.current = true;
+    router.replace(`/projects/${projectId}/variants`);
+  }, [job, countdown, projectId, router]);
 
   // No job yet — user navigated here without clicking generate
   if (!job) {

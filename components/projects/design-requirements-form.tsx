@@ -27,6 +27,7 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
   const [saved, setSaved] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isMockGenerating, setIsMockGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   const [preferredStyles, setPreferredStyles] = useState<string[]>(
     existing?.preferred_styles ?? []
@@ -75,6 +76,7 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
 
   async function handleGenerate() {
     setIsGenerating(true);
+    setGenerationError(null);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -83,14 +85,14 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data.error ?? "Generation failed. Please try again.");
+        setGenerationError(data.error ?? "Generation failed. Please try again.");
         return;
       }
       router.push(`/projects/${projectId}/generating`);
     } catch (e) {
       const message =
         e instanceof Error ? e.message : "Generation failed. Please try again.";
-      alert(message);
+      setGenerationError(message);
     } finally {
       setIsGenerating(false);
     }
@@ -98,6 +100,7 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
 
   async function handleMockGenerate() {
     setIsMockGenerating(true);
+    setGenerationError(null);
     try {
       const res = await fetch("/api/generate/mock", {
         method: "POST",
@@ -106,14 +109,14 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        alert(data.error ?? "Mock generation failed.");
+        setGenerationError(data.error ?? "Mock generation failed.");
         return;
       }
       router.push(`/projects/${projectId}/variants`);
     } catch (e) {
       const message =
         e instanceof Error ? e.message : "Mock generation failed.";
-      alert(message);
+      setGenerationError(message);
     } finally {
       setIsMockGenerating(false);
     }
@@ -281,6 +284,13 @@ export function DesignRequirementsForm({ projectId, existing }: Props) {
           </Button>
         )}
       </div>
+
+      {/* Generation error */}
+      {generationError && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {generationError}
+        </div>
+      )}
     </div>
   );
 }

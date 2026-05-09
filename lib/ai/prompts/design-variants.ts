@@ -24,7 +24,10 @@ Generate exactly 4 design variants:
 
 Each variant must include 5-7 shopping items across appropriate categories.
 
-Shopping categories: furniture, lighting, decor, bedding, curtains, rugs, wall_art, plants, storage, other
+Shopping categories (you MUST use ONLY these exact values — no other categories are allowed):
+  furniture, lighting, decor, bedding, curtains, rugs, wall_art, plants, storage, other
+
+IMPORTANT: Use the exact plural forms "curtains" (not curtain), "rugs" (not rug), and "plants" (not plant). For any furniture-like item (sofa, chair, table, desk, bed, nightstand, ottoman, bench, bookshelf, headboard), use "furniture". For any lamp or light, use "lighting". For pillows, blankets, sheets, duvets, use "bedding". For shelves, cabinets, organizers, baskets, racks, use "storage". If nothing else fits, use "decor" or "other".
 
 Priorities: essential (must-have for the design to work), recommended (strongly suggested), optional (nice-to-have)
 
